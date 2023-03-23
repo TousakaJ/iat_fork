@@ -7,7 +7,7 @@ import math
 
 from timm.models.layers import trunc_normal_
 from model.blocks import CBlock_ln, SwinTransformerBlock
-from model.global_net import Global_pred
+# from model.global_net import Global_pred
 # from blocks import CBlock_ln, SwinTransformerBlock
 # from global_net import Global_pred
 

@@ -18,7 +18,7 @@ def populate_train_list(images_path, mode='train'):
     # images_board = "../"
     image_list_lowlight = glob.glob(images_path + '*.png')
     # print(image_list_lowlight)
-    # print(glob.glob(images_path + '*'))
+    print(glob.glob(images_path + '*'))
     train_list = image_list_lowlight
     if mode == 'train':
         random.shuffle(train_list)

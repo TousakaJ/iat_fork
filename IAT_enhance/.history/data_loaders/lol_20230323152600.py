@@ -16,9 +16,9 @@ random.seed(1143)
 def populate_train_list(images_path, mode='train'):
     # print(images_path)
     # images_board = "../"
-    image_list_lowlight = glob.glob(images_path + '*.png')
-    # print(image_list_lowlight)
-    # print(glob.glob(images_path + '*'))
+    image_list_lowlight = glob.glob(images_board + images_path + '*.png')
+    print(image_list_lowlight)
+    print(glob.glob(images_path + '*'))
     train_list = image_list_lowlight
     if mode == 'train':
         random.shuffle(train_list)
