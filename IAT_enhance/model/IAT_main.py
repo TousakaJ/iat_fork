@@ -11,9 +11,12 @@ from model.global_net import Global_pred
 # from blocks import CBlock_ln, SwinTransformerBlock
 # from global_net import Global_pred
 
+from torch.utils.checkpoint import checkpoint
+
 class Local_pred(nn.Module):
-    def __init__(self, dim=16, number=4, type='ccc'):
+    def __init__(self, dim=16, number=4, type='ccc', use_checkpoint=False):
         super(Local_pred, self).__init__()
+        self.use_checkpoint = use_checkpoint
         # initial convolution
         self.conv1 = nn.Conv2d(3, dim, 3, padding=1, groups=1)
         self.relu = nn.LeakyReLU(negative_slope=0.2, inplace=True)
@@ -34,16 +37,22 @@ class Local_pred(nn.Module):
 
 
     def forward(self, img):
-        img1 = self.relu(self.conv1(img))
-        mul = self.mul_blocks(img1)
-        add = self.add_blocks(img1)
+        if self.use_checkpoint:
+            img1 = checkpoint(self.relu, self.conv1(img))
+            mul = checkpoint(self.mul_blocks, img1)
+            add = checkpoint(self.add_blocks, img1)
+        else:
+            img1 = self.relu(self.conv1(img))
+            mul = self.mul_blocks(img1)
+            add = self.add_blocks(img1)
 
         return mul, add
 
 # Short Cut Connection on Final Layer
 class Local_pred_S(nn.Module):
-    def __init__(self, in_dim=3, dim=16, number=4, type='ccc'):
+    def __init__(self, in_dim=3, dim=16, number=4, type='ccc', use_checkpoint=False):
         super(Local_pred_S, self).__init__()
+        self.use_checkpoint = use_checkpoint
         # initial convolution
         self.conv1 = nn.Conv2d(in_dim, dim, 3, padding=1, groups=1)
         self.relu = nn.LeakyReLU(negative_slope=0.2, inplace=True)
@@ -83,18 +92,27 @@ class Local_pred_S(nn.Module):
             
 
     def forward(self, img):
-        img1 = self.relu(self.conv1(img))
-        # short cut connection
-        mul = self.mul_blocks(img1) + img1
-        add = self.add_blocks(img1) + img1
-        mul = self.mul_end(mul)
-        add = self.add_end(add)
+        if self.use_checkpoint:
+            img1 = checkpoint(self.relu, self.conv1(img))
+            # short cut connection
+            mul = checkpoint(self.mul_blocks, img1) + img1
+            add = checkpoint(self.add_blocks, img1) + img1
+            mul = checkpoint(self.mul_end, mul)
+            add = checkpoint(self.add_end, add)
+        else:
+            img1 = self.relu(self.conv1(img))
+            # short cut connection
+            mul = self.mul_blocks(img1) + img1
+            add = self.add_blocks(img1) + img1
+            mul = self.mul_end(mul)
+            add = self.add_end(add)
 
         return mul, add
 
 class IAT(nn.Module):
-    def __init__(self, in_dim=3, with_global=True, type='lol'):
+    def __init__(self, in_dim=3, with_global=True, type='lol', use_checkpoint=False):
         super(IAT, self).__init__()
+        self.use_checkpoint = use_checkpoint
         #self.local_net = Local_pred()
         
         self.local_net = Local_pred_S(in_dim=in_dim)
@@ -112,7 +130,11 @@ class IAT(nn.Module):
 
     def forward(self, img_low):
         #print(self.with_global)
-        mul, add = self.local_net(img_low)
+        if self.use_checkpoint:
+            mul, add = checkpoint(self.local_net, img_low)
+        else:
+            mul, add = self.local_net(img_low)
+        
         img_high = (img_low.mul(mul)).add(add)
 
         if not self.with_global:
