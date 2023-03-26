@@ -60,7 +60,7 @@ Your_Path
 2. Evaluation pretrain model on LOL-V2-real dataset
 ```
 python evaluation_lol_v2.py --img_val_path Your_Path/Test/Low/
-python evaluation_lol_v2.py --img_val_path dataset/LOL_v2/Test/Low/
+python evaluation_lol_v2.py --gpu_id 1 --img_val_path dataset/LOL_v2/Test/Low/
 ```
 Results:
 
@@ -72,6 +72,7 @@ Results:
 ```
 python train_lol_v2.py --gpu_id 0 --img_path Your_Path/Train/Low/ --img_val_path Your_Path/Test/Low/ 
 python train_lol_v2.py --gpu_id 0 --img_path dataset/LOL_v2/Train/Low/ --img_val_path dataset/LOL_v2/Test/Low/ 
+python train_lol_v2.py --gpu_id 1 --img_path dataset/LOL_v2/Train/Low/ --img_val_path dataset/LOL_v2/Test/Low/ 
 ```
 
 <br/>
